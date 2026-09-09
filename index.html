@@ -469,6 +469,63 @@
     background-repeat: no-repeat;
   }
   .btn-create svg { flex-shrink: 0; }
+  /* ---------- Test run and preview (report screen) ---------- */
+  .report-view {
+    position: fixed;
+    inset: 0 0 0 48px;
+    z-index: 200;
+    display: none;
+    background: #FAFAFA;
+    overflow-y: auto;
+  }
+  body.report .report-view { display: block; animation: overlayIn 0.2s ease; }
+  .report-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    height: 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px 0 12px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E6E6E6;
+  }
+  .report-crumb { display: flex; align-items: center; gap: 8px; }
+  .report-back {
+    display: flex; align-items: center;
+    gap: 10px;
+    background: none; border: none;
+    font-family: system-ui, sans-serif;
+    font-size: 14px; line-height: 20px;
+    color: #171717;
+  }
+  .report-back:hover svg { stroke-opacity: 0.7; }
+  .btn-create-agent {
+    height: 32px;
+    display: flex; align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: none;
+    background: #171717;
+    font-size: 14px; font-weight: 500; line-height: 18px;
+    color: #FFFFFF;
+  }
+  .btn-create-agent:hover { background: #000000; }
+  .report-body {
+    display: flex;
+    justify-content: center;
+    padding: 25px 24px 60px;
+  }
+  .report-panel {
+    width: 874px;
+    max-width: 100%;
+    border-radius: 20px;
+    outline: 1px solid #E6E6E6;
+    background: #FFFFFF;
+    overflow: hidden;
+  }
+  .report-panel img { display: block; width: 100%; height: auto; }
+
   .agent-modal.visual .modal-sections { display: none; }
   .agent-modal.visual .prompt-actions { display: none; }
   .agent-modal:not(.visual) .visual-canvas { display: none; }
@@ -793,6 +850,29 @@
   </div>
 </div>
 
+<div class="report-view">
+  <div class="report-topbar">
+    <div class="report-crumb">
+      <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1.5" width="14" height="13" rx="2.5" fill="none" stroke="#666666"/>
+        <path d="M5.6 1.5 L5.6 14.5" fill="none" stroke="#666666"/>
+      </svg>
+      <button id="reportBack" class="report-back">
+        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9.9 3.2 L5.3 8 L9.9 12.8" fill="none" stroke="#171717" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Agent Outcome, test run and preview report
+      </button>
+    </div>
+    <button class="btn-create-agent">Create agent</button>
+  </div>
+  <div class="report-body">
+    <div class="report-panel">
+      <img src="report-panel.png" alt="Daily KPI watcher report" width="874" height="4834" />
+    </div>
+  </div>
+</div>
+
 <script>
   const input = document.getElementById('promptInput');
   const sendBtn = document.getElementById('sendBtn');
@@ -945,7 +1025,7 @@
   }
   segPrompt.addEventListener('click', () => setModalMode('prompt'));
   segVisual.addEventListener('click', () => setModalMode('visual'));
-  document.getElementById('btnSkipVisual').addEventListener('click', closeModal);
+  document.getElementById('btnSkipVisual').addEventListener('click', openReport);
   document.getElementById('btnStartVisual').addEventListener('click', closeModal);
 
   sendBtn.addEventListener('click', () => {
@@ -956,12 +1036,25 @@
   modalOverlay.addEventListener('click', (e) => {
     if (e.target === modalOverlay) closeModal();
   });
-  document.getElementById('btnTestRun').addEventListener('click', closeModal);
   document.getElementById('btnCreateAgent').addEventListener('click', closeModal);
+
+  // ---------- Test run and preview (report screen) ----------
+  const reportView = document.querySelector('.report-view');
+  function openReport() {
+    reportView.scrollTop = 0;
+    document.body.classList.add('report');
+  }
+  function closeReport() {
+    document.body.classList.remove('report');
+  }
+  document.getElementById('btnTestRun').addEventListener('click', openReport);
+  document.getElementById('reportBack').addEventListener('click', closeReport);
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (modalOverlay.classList.contains('open')) {
+    if (document.body.classList.contains('report')) {
+      closeReport();
+    } else if (modalOverlay.classList.contains('open')) {
       closeModal();
     } else if (runAgentsPill.classList.contains('active')) {
       runAgentsPill.click();
