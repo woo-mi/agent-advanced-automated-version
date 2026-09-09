@@ -116,13 +116,12 @@
   /* ---------- Prompt card ---------- */
   .prompt-wrap {
     position: relative;
-    width: 764px; height: 120px;
+    width: 764px;
     flex-shrink: 0;
   }
   .prompt-gradient {
     position: absolute;
-    top: -1px; left: -1px;
-    width: 766px; height: 122px;
+    inset: -1px;
     border-radius: 25px;
     opacity: 0.55;
     background: linear-gradient(353deg, #5A56E8 35%, #43C6D8 100%);
@@ -130,7 +129,7 @@
   }
   .prompt-card {
     position: relative;
-    width: 764px; height: 120px;
+    width: 764px; min-height: 120px;
     display: flex; flex-direction: column;
     gap: 14px;
     padding: 18px 12px 12px;
@@ -139,8 +138,10 @@
     box-shadow: 0 1px 10px rgba(15, 17, 40, 0.06);
   }
   .prompt-input {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 26px;
+    height: 26px;
+    overflow: hidden;
     padding: 0 8px;
     border: none; outline: none;
     resize: none;
@@ -210,6 +211,85 @@
     transition: background-color 0.12s ease;
   }
   .pill:hover { background: #FAFAFA; }
+  .pill.active {
+    background: #15171B;
+    color: #FBFCFD;
+  }
+  .pill.active:hover { background: #15171B; }
+  .pill.active svg [stroke]:not([stroke="none"]) { stroke: #FBFCFD; }
+  .pill.active svg [fill]:not([fill="none"]) { fill: #FBFCFD; }
+
+  /* ---------- Agent chip in composer (frame 2) ---------- */
+  .agent-mode-chip {
+    height: 32px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 0 9px 0 7px;
+    border-radius: 9999px;
+    background: rgba(21, 23, 27, 0.08);
+    border: 1px solid rgba(21, 23, 27, 0.28);
+    font-family: system-ui, sans-serif;
+    font-size: 14px; font-weight: 500;
+    color: #15171B;
+  }
+  .agent-mode-chip.visible {
+    display: flex;
+    animation: chipIn 0.18s ease;
+  }
+  @keyframes chipIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* ---------- Agents section (frames 2 & 3) ---------- */
+  .agents-section {
+    display: none;
+    width: 840px;
+    padding-left: 84px;
+    margin-top: 30px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .agents-section.visible {
+    display: flex;
+    animation: sectionIn 0.22s ease;
+  }
+  @keyframes sectionIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .agents-heading {
+    font-size: 14px; font-weight: 500;
+    line-height: 143%;
+    color: #15171B;
+  }
+  .agents-chips {
+    display: flex; align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 719px;
+  }
+  .agent-chip {
+    height: 32px;
+    flex-shrink: 0;
+    display: flex; align-items: center;
+    padding: 0 14px;
+    border-radius: 100px;
+    border: 1px solid #D4D4D4;
+    background: transparent;
+    font-size: 13px; font-weight: 500; line-height: 16px;
+    color: #404040;
+    white-space: nowrap;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+  .agent-chip:hover { background: #F0F0F0; }
+  .agent-chip.selected {
+    background: #E5E5E5;
+    border-color: #A3A3A3;
+    color: #171717;
+  }
 </style>
 </head>
 <body>
@@ -342,6 +422,14 @@
                 <path d="m6 9 6 6 6-6" fill="none" stroke="#8A8B9C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
+            <div id="agentModeChip" class="agent-mode-chip">
+              <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="6.944" fill="none" stroke="#15171B" stroke-width="1.5"/>
+                <rect x="8.333" y="7.222" width="1.667" height="3.333" rx="0.75" fill="#15171B"/>
+                <rect x="12.222" y="7.222" width="1.667" height="3.333" rx="0.75" fill="#15171B"/>
+              </svg>
+              Agent
+            </div>
           </div>
           <div class="controls-right">
             <button class="icon-btn" title="Voice input">
@@ -370,7 +458,7 @@
         </svg>
         Build Apps
       </button>
-      <button class="pill">
+      <button id="runAgentsPill" class="pill">
         <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
           <circle cx="10" cy="10" r="6.944" fill="none" stroke="#666666" stroke-width="1.5"/>
           <rect x="8.333" y="7.222" width="1.667" height="3.333" rx="0.75" fill="#666666"/>
@@ -394,14 +482,104 @@
         Write Reports
       </button>
     </div>
+
+    <div id="agentsSection" class="agents-section">
+      <div class="agents-heading">Agents post findings to your feed. Start from one:</div>
+      <div class="agents-chips">
+        <button class="agent-chip" data-prompt="Create an agent named &quot;AWS Spike Alert&quot; that runs daily. Every run, scan AWS spend across services, compare it to the trailing 30-day baseline, and post a concise summary. Lead with any cost spikes and explain the likely driver.">Daily AWS Spike Alert</button>
+        <button class="agent-chip" data-prompt="Create an agent named &quot;Region Capacity Watch&quot; that runs daily. Every run, review capacity utilization by region, compare it to its recent trend, and post a concise summary. Lead with regions nearing their limits and explain the likely driver.">Daily Region Capacity Watch</button>
+        <button class="agent-chip" data-prompt="Create an agent named &quot;Top Customers&quot; that runs weekly. Every run, rank customers by revenue and usage growth, compare the list to last week, and post a concise summary. Lead with notable movers and explain what changed.">Weekly Top Customers</button>
+        <button class="agent-chip" data-prompt="Create an agent named &quot;AWS Usage Spike&quot; that runs daily. Every run, review usage volume across AWS services, compare it to the trailing baseline, and post a concise summary. Lead with unusual spikes and explain the likely driver.">Daily AWS Usage Spike</button>
+        <button class="agent-chip" data-prompt="Create an agent named &quot;P&amp;L Capacity&quot; that runs daily. Every run, review P&amp;L against capacity and utilization, compare them to their recent trend, and post a concise summary. Lead with anything anomalous and explain the likely driver.">Daily P&amp;L capacity</button>
+      </div>
+    </div>
   </div>
 </main>
 
 <script>
   const input = document.getElementById('promptInput');
   const sendBtn = document.getElementById('sendBtn');
-  input.addEventListener('input', () => {
+  const runAgentsPill = document.getElementById('runAgentsPill');
+  const agentModeChip = document.getElementById('agentModeChip');
+  const agentsSection = document.getElementById('agentsSection');
+  const agentChips = Array.from(document.querySelectorAll('.agent-chip'));
+
+  let typingTimer = null;
+  let autoFilledValue = null; // last fully auto-filled prompt, to know if the user edited it
+
+  function autosize() {
+    input.style.height = '26px';
+    input.style.height = input.scrollHeight + 'px';
+  }
+  function updateSend() {
     sendBtn.classList.toggle('active', input.value.trim().length > 0);
+  }
+  function cancelTyping() {
+    if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
+  }
+  function setValue(v) {
+    input.value = v;
+    autosize();
+    updateSend();
+  }
+  function typePrompt(text) {
+    cancelTyping();
+    setValue('');
+    let i = 0;
+    typingTimer = setInterval(() => {
+      i = Math.min(i + 4, text.length);
+      setValue(text.slice(0, i));
+      if (i >= text.length) {
+        cancelTyping();
+        autoFilledValue = text;
+      }
+    }, 10);
+  }
+  function clearSelection() {
+    agentChips.forEach(c => c.classList.remove('selected'));
+  }
+  function clearAutoPrompt() {
+    const wasTyping = typingTimer !== null;
+    cancelTyping();
+    // only wipe the input if the user hasn't edited the auto-filled text
+    if (wasTyping || (autoFilledValue !== null && input.value === autoFilledValue)) {
+      setValue('');
+    }
+    autoFilledValue = null;
+  }
+
+  input.addEventListener('input', () => {
+    autosize();
+    updateSend();
+  });
+
+  runAgentsPill.addEventListener('click', () => {
+    const active = runAgentsPill.classList.toggle('active');
+    agentModeChip.classList.toggle('visible', active);
+    agentsSection.classList.toggle('visible', active);
+    if (!active) {
+      clearSelection();
+      clearAutoPrompt();
+    }
+  });
+
+  agentChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (chip.classList.contains('selected')) {
+        chip.classList.remove('selected');
+        clearAutoPrompt();
+        return;
+      }
+      clearSelection();
+      chip.classList.add('selected');
+      typePrompt(chip.dataset.prompt);
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && runAgentsPill.classList.contains('active')) {
+      runAgentsPill.click();
+    }
   });
 </script>
 
