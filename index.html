@@ -1344,20 +1344,11 @@
     document.getElementById('agentTrigger').textContent = modalTrigger.textContent;
     setAgentTab('edit');
     setAgentMode(mode === 'visual' ? 'visual' : 'text');
-    document.body.classList.remove('report');
-    closeModal();
+    // leave the modal/report layers open beneath so back returns to them
     document.body.classList.add('agent');
   }
   function closeAgentView() {
     document.body.classList.remove('agent');
-    // the agent is created: land back on a fresh home
-    cancelTyping();
-    setValue('');
-    autoFilledValue = null;
-    clearSelection();
-    runAgentsPill.classList.remove('active');
-    agentModeChip.classList.remove('visible');
-    agentsSection.classList.remove('visible');
   }
   tabOutcome.addEventListener('click', () => setAgentTab('outcome'));
   tabEdit.addEventListener('click', () => setAgentTab('edit'));
