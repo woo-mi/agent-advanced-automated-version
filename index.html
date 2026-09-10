@@ -1307,7 +1307,7 @@
   segPrompt.addEventListener('click', () => setModalMode('prompt'));
   segVisual.addEventListener('click', () => setModalMode('visual'));
   document.getElementById('btnSkipVisual').addEventListener('click', openReport);
-  document.getElementById('btnStartVisual').addEventListener('click', closeModal);
+  document.getElementById('btnStartVisual').addEventListener('click', () => openAgentView('visual'));
 
   sendBtn.addEventListener('click', () => {
     if (!sendBtn.classList.contains('active')) return;
@@ -1336,14 +1336,14 @@
     document.getElementById('agentSegText').classList.toggle('active', !visual);
     agentMain.scrollTop = 0;
   }
-  function openAgentView() {
+  function openAgentView(mode) {
     const title = modalTitle.textContent;
     document.getElementById('agentCrumb').textContent =
       'Agents / ' + (title === 'Daily KPI watcher' ? 'KPI Watcher' : title);
     document.getElementById('agentInstr').textContent = modalInstr.textContent;
     document.getElementById('agentTrigger').textContent = modalTrigger.textContent;
     setAgentTab('edit');
-    setAgentMode('text');
+    setAgentMode(mode === 'visual' ? 'visual' : 'text');
     document.body.classList.remove('report');
     closeModal();
     document.body.classList.add('agent');
@@ -1364,7 +1364,7 @@
   document.getElementById('agentSegText').addEventListener('click', () => setAgentMode('text'));
   document.getElementById('agentSegVisual').addEventListener('click', () => setAgentMode('visual'));
   document.getElementById('agentBack').addEventListener('click', closeAgentView);
-  document.getElementById('btnCreateAgent').addEventListener('click', openAgentView);
+  document.getElementById('btnCreateAgent').addEventListener('click', () => openAgentView('text'));
 
   // ---------- Test run and preview (report screen) ----------
   const reportView = document.querySelector('.report-view');
