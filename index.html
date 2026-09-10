@@ -563,6 +563,7 @@
     position: absolute;
     top: 48px; left: 440px; right: 0; bottom: 0;
     overflow-y: auto;
+    overflow-x: hidden;
   }
   .agent-toggle {
     position: sticky;
@@ -590,6 +591,21 @@
   .agent-outcome img { display: block; width: 100%; height: auto; }
   .agent-view:not(.outcome) .agent-outcome { display: none; }
   .agent-view.outcome .agent-edit { display: none; }
+
+  /* Visual Agent state (frame "Visual Agent") */
+  .agent-visual-canvas {
+    display: none;
+    width: 1070px; height: 395px;
+    margin: 188px 0 60px 58px;
+    background-image: url(visual-canvas.png);
+    background-size: 106.277%;
+    background-position: 54.167% 23.867%;
+    background-repeat: no-repeat;
+  }
+  .agent-view.visual:not(.outcome) .agent-visual-canvas { display: block; }
+  .agent-view.visual:not(.outcome) .agent-edit { display: none; }
+  .agent-view.visual .btn-update-agent { opacity: 1; cursor: pointer; }
+  .agent-view.visual .btn-update-agent:hover { background: #000000; }
 
   /* ---------- Test run and preview (report screen) ---------- */
   .report-view {
@@ -1014,14 +1030,14 @@
 
   <div class="agent-left">
     <div class="agent-seg">
-      <button class="seg-item active">
+      <button id="agentSegText" class="seg-item active">
         <svg width="15" height="15" viewBox="0 0 12.857 12.857" xmlns="http://www.w3.org/2000/svg">
           <path d="M11.25 8.035a1.071 1.071 0 0 1-1.071 1.072H3.75l-2.143 2.143V2.678a1.071 1.071 0 0 1 1.072-1.071h7.5a1.071 1.071 0 0 1 1.071 1.071z" fill="none" stroke="#4D4D4D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M3.75 4.285h5.357M3.75 6.428h3.214" fill="none" stroke="#4D4D4D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         Text mode
       </button>
-      <button class="seg-item">
+      <button id="agentSegVisual" class="seg-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15">
           <rect width="5" height="5" x="1.875" y="1.875" rx="2" fill="none" stroke="#4D4D4D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M4.375 6.875v2.5a1.25 1.25 0 0 0 1.25 1.25h2.5" fill="none" stroke="#4D4D4D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1125,6 +1141,8 @@
         </div>
       </div>
     </div>
+
+    <div class="agent-visual-canvas"></div>
 
     <div class="agent-outcome">
       <img src="report-content-v2.png" alt="Daily KPI watcher report outcome" width="874" height="4834" />
@@ -1307,6 +1325,13 @@
     tabEdit.classList.toggle('active', !outcome);
     agentMain.scrollTop = 0;
   }
+  function setAgentMode(mode) {
+    const visual = mode === 'visual';
+    agentView.classList.toggle('visual', visual);
+    document.getElementById('agentSegVisual').classList.toggle('active', visual);
+    document.getElementById('agentSegText').classList.toggle('active', !visual);
+    agentMain.scrollTop = 0;
+  }
   function openAgentView() {
     const title = modalTitle.textContent;
     document.getElementById('agentCrumb').textContent =
@@ -1314,6 +1339,7 @@
     document.getElementById('agentInstr').textContent = modalInstr.textContent;
     document.getElementById('agentTrigger').textContent = modalTrigger.textContent;
     setAgentTab('edit');
+    setAgentMode('text');
     document.body.classList.remove('report');
     closeModal();
     document.body.classList.add('agent');
@@ -1331,6 +1357,8 @@
   }
   tabOutcome.addEventListener('click', () => setAgentTab('outcome'));
   tabEdit.addEventListener('click', () => setAgentTab('edit'));
+  document.getElementById('agentSegText').addEventListener('click', () => setAgentMode('text'));
+  document.getElementById('agentSegVisual').addEventListener('click', () => setAgentMode('visual'));
   document.getElementById('agentBack').addEventListener('click', closeAgentView);
   document.getElementById('btnCreateAgent').addEventListener('click', openAgentView);
 
