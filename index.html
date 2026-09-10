@@ -595,8 +595,12 @@
   /* Visual Agent state (frame "Visual Agent") */
   .agent-visual-canvas {
     display: none;
-    width: 1070px; height: 395px;
+    height: 395px;
     margin: 188px 0 60px 58px;
+    background: #F4F5F7;
+  }
+  .agent-visual-img {
+    width: 1070px; height: 395px;
     background-image: url(visual-canvas.png);
     background-size: 106.277%;
     background-position: 54.167% 23.867%;
@@ -1142,7 +1146,7 @@
       </div>
     </div>
 
-    <div class="agent-visual-canvas"></div>
+    <div class="agent-visual-canvas"><div class="agent-visual-img"></div></div>
 
     <div class="agent-outcome">
       <img src="report-content-v2.png" alt="Daily KPI watcher report outcome" width="874" height="4834" />
